@@ -1,0 +1,85 @@
+using System;
+using System.Linq;
+
+namespace StatisticsProject
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            double[] data = { 115, 182, 191, 31, 196, 1099, 5, 172, 10, 179, 83, 21, 20, 21, 186, 177, 195, 193, 188, 199, 62, 109, 105, 183, 110 };
+
+            Array.Sort(data);
+            int n = data.Length;
+
+            double mean = data.Average();
+
+            var mode = data
+                .GroupBy(v => v)
+                .OrderByDescending(g => g.Count())
+                .First()
+                .Key;
+
+            double median = GetPercentile(data, 50);
+
+            double sumOfSquares = data.Sum(x => Math.Pow(x - mean, 2));
+            double variance = sumOfSquares / (n - 1);
+
+            double standardDeviation = Math.Sqrt(variance);
+
+            double p20 = GetPercentile(data, 20);
+            double p50 = GetPercentile(data, 50);
+            double q1 = GetPercentile(data, 25);
+            double q2 = GetPercentile(data, 50);
+            double q3 = GetPercentile(data, 75);
+
+            double range = data.Max() - data.Min();
+            double iqr = q3 - q1;
+
+            double sumOfDeviations = data.Sum(x => x - mean);
+
+            Console.WriteLine("=== Task 1: Statistics Results ===");
+            Console.WriteLine($"Mean: {mean:F2}");
+            Console.WriteLine($"Mode: {mode}");
+            Console.WriteLine($"Median: {median}");
+            Console.WriteLine($"Variance: {variance:F2}");
+            Console.WriteLine($"Standard Deviation: {standardDeviation:F2}");
+            Console.WriteLine($"P20: {p20}");
+            Console.WriteLine($"P50: {p50}");
+            Console.WriteLine($"Second Quartile: {q2}");
+            Console.WriteLine($"Third Quartile: {q3}");
+            Console.WriteLine($"Range: {range}");
+            Console.WriteLine($"Interquartile Range: {iqr}");
+            Console.WriteLine($"Summation of Deviations: {sumOfDeviations:F2}\n");
+
+            double lowerBound = q1 - 1.5 * iqr;
+            double upperBound = q3 + 1.5 * iqr;
+
+            Console.WriteLine("=== Task 2: Outliers Check ===");
+            foreach (var num in data)
+            {
+                if (num < lowerBound || num > upperBound)
+                {
+                    Console.WriteLine($"Number {num} is an OUTLIER.");
+                }
+            }
+
+            Console.ReadLine();
+        }
+
+        static double GetPercentile(double[] sortedData, double percentile)
+        {
+            int n = sortedData.Length;
+            double realIndex = (percentile / 100.0) * (n - 1);
+            int index = (int)realIndex;
+            double fraction = realIndex - index;
+
+            if (index + 1 < n)
+            {
+                return sortedData[index] + fraction * (sortedData[index + 1] - sortedData[index]);
+            }
+
+            return sortedData[index];
+        }
+    }
+}
